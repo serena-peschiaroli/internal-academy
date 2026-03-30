@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\RoleType;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Fillable(['name', 'key'])]
 class Role extends Model
 {
     protected function casts(): array

@@ -3,16 +3,19 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\RoleType;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'role_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -36,5 +39,37 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function createdWorkshops(): HasMany
+    {
+        return $this->hasMany(Workshop::class);
+    }
+
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(Registration::class);
+    }
+
+    public function workshops(): BelongsToMany
+    {
+        return $this->belongsToMany(Workshop::class, 'registrations')
+            ->withPivot(['status', 'waitlist_position'])
+            ->withTimestamps();
+    }
+
+    public function hasRole(RoleType $role): bool
+    {
+        return $this->role?->key === $role;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(RoleType::ADMIN);
+    }
+
+    public function isEmployee(): bool
+    {
+        return $this->hasRole(RoleType::EMPLOYEE);
     }
 }

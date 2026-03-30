@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('workshop_id')->constrained()->cascadeOnDelete();
-            $table->enum('status', ['confirmed', 'waitlisted']);
+            $table->string('status');
             $table->unsignedInteger('waitlist_position')->nullable(); // per FIFO
             $table->timestamps();
 
