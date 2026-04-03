@@ -15,22 +15,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::query()->firstOrCreate(
-            ['key' => RoleType::ADMIN->value],
-            ['name' => 'Admin'],
-        );
-
         $employeeRole = Role::query()->firstOrCreate(
             ['key' => RoleType::EMPLOYEE->value],
             ['name' => 'Employee'],
         );
 
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
+        User::query()->firstOrCreate([
             'email' => 'test@example.com',
+        ], [
+            'name' => 'Test User',
+            'password' => 'password',
             'role_id' => $employeeRole->id,
         ]);
+
+        $this->call(AdminUserSeeder::class);
+        $this->call(WorkshopSeeder::class);
     }
 }
