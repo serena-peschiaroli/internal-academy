@@ -19,6 +19,8 @@ function createUserWithRole(RoleType $role): User
 }
 
 test('admin can access workshop index, create and edit pages', function () {
+    $this->withoutVite();
+
     $admin = createUserWithRole(RoleType::ADMIN);
     $workshop = Workshop::query()->create([
         'user_id' => $admin->id,
@@ -154,4 +156,3 @@ test('admin can update and delete workshop', function () {
         'id' => $workshop->id,
     ]);
 });
-
