@@ -1,8 +1,16 @@
+export type Role = {
+    id: number;
+    name: string;
+    key: 'admin' | 'employee';
+};
+
 export type User = {
     id: number;
     name: string;
     email: string;
     avatar?: string;
+    role_id: number;
+    role: Role | null;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;

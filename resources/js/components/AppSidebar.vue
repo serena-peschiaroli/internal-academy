@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, CalendarRange, FolderGit2, LayoutGrid, UserCircle2, UsersRound } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,15 +16,50 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { edit as profile } from '@/routes/profile';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const page = usePage();
+const roleKey = computed(() => page.props.auth.user.role?.key ?? 'employee');
+
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    if (roleKey.value === 'admin') {
+        items.push({
+            title: 'Workshops',
+            href: '/admin/workshops',
+            icon: CalendarRange,
+        });
+        items.push({
+            title: 'Create User',
+            href: '/admin/users/create',
+            icon: UsersRound,
+        });
+
+        return items;
+    }
+
+    items.push({
+        title: 'Workshops',
+        href: '/workshops',
+        icon: CalendarRange,
+    });
+
+    items.push({
+        title: 'My Profile',
+        href: profile(),
+        icon: UserCircle2,
+    });
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {
