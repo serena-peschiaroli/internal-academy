@@ -5,7 +5,7 @@ import { Check, Copy, ScanLine } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import AlertError from '@/components/AlertError.vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
+import { AtomButton as Button } from '@/components/Atoms';
 import {
     Dialog,
     DialogContent,
@@ -295,3 +295,4 @@ watch(
         </DialogContent>
     </Dialog>
 </template>
+

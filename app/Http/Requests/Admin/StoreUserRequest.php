@@ -27,11 +27,18 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'socials' => ['nullable', 'array'],
+            'socials.reddit' => ['nullable', 'url', 'max:255'],
+            'socials.linkedin' => ['nullable', 'url', 'max:255'],
+            'socials.facebook' => ['nullable', 'url', 'max:255'],
+            'socials.instagram' => ['nullable', 'url', 'max:255'],
+            'socials.website' => ['nullable', 'url', 'max:255'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'role' => ['required', 'string', Rule::in([
                 RoleType::ADMIN->value,
                 RoleType::EMPLOYEE->value,
             ])],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
 }

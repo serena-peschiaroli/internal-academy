@@ -21,7 +21,7 @@ defineOptions({
 
     <h1 class="sr-only">Appearance settings</h1>
 
-    <div class="space-y-6">
+    <div class="section-card space-y-6">
         <Heading
             variant="small"
             title="Appearance settings"

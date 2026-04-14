@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
+import { AtomInput, AtomPasswordInput } from '@/components/Atoms';
 import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
+import { AtomButton as Button } from '@/components/Atoms';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { register } from '@/routes';
@@ -43,22 +41,20 @@ defineProps<{
         class="flex flex-col gap-6"
     >
         <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    required
-                    autofocus
-                    :tabindex="1"
-                    autocomplete="email"
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
+            <AtomInput
+                id="email"
+                type="email"
+                name="email"
+                label="Email address"
+                required
+                autofocus
+                :tabindex="1"
+                autocomplete="email"
+                placeholder="email@example.com"
+                :error="errors.email"
+            />
 
-            <div class="grid gap-2">
+            <div class="space-y-2">
                 <div class="flex items-center justify-between">
                     <Label for="password">Password</Label>
                     <TextLink
@@ -70,15 +66,16 @@ defineProps<{
                         Forgot password?
                     </TextLink>
                 </div>
-                <PasswordInput
+                <AtomPasswordInput
                     id="password"
                     name="password"
                     required
                     :tabindex="2"
                     autocomplete="current-password"
                     placeholder="Password"
+                    :error="errors.password"
+                    :label="''"
                 />
-                <InputError :message="errors.password" />
             </div>
 
             <div class="flex items-center justify-between">
@@ -109,3 +106,4 @@ defineProps<{
         </div>
     </Form>
 </template>
+

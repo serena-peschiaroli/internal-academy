@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import InputError from '@/components/InputError.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AtomInput, AtomPasswordInput } from '@/components/Atoms';
+import { AtomButton as Button } from '@/components/Atoms';
 import { Spinner } from '@/components/ui/spinner';
 import { update } from '@/routes/password';
 
@@ -34,44 +31,35 @@ const inputEmail = ref(props.email);
         v-slot="{ errors, processing }"
     >
         <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="email">Email</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    autocomplete="email"
-                    v-model="inputEmail"
-                    class="mt-1 block w-full"
-                    readonly
-                />
-                <InputError :message="errors.email" class="mt-2" />
-            </div>
+            <AtomInput
+                id="email"
+                type="email"
+                name="email"
+                label="Email"
+                autocomplete="email"
+                v-model="inputEmail"
+                readonly
+                :error="errors.email"
+            />
 
-            <div class="grid gap-2">
-                <Label for="password">Password</Label>
-                <PasswordInput
-                    id="password"
-                    name="password"
-                    autocomplete="new-password"
-                    class="mt-1 block w-full"
-                    autofocus
-                    placeholder="Password"
-                />
-                <InputError :message="errors.password" />
-            </div>
+            <AtomPasswordInput
+                id="password"
+                name="password"
+                label="Password"
+                autocomplete="new-password"
+                autofocus
+                placeholder="Password"
+                :error="errors.password"
+            />
 
-            <div class="grid gap-2">
-                <Label for="password_confirmation"> Confirm password </Label>
-                <PasswordInput
-                    id="password_confirmation"
-                    name="password_confirmation"
-                    autocomplete="new-password"
-                    class="mt-1 block w-full"
-                    placeholder="Confirm password"
-                />
-                <InputError :message="errors.password_confirmation" />
-            </div>
+            <AtomPasswordInput
+                id="password_confirmation"
+                name="password_confirmation"
+                label="Confirm password"
+                autocomplete="new-password"
+                placeholder="Confirm password"
+                :error="errors.password_confirmation"
+            />
 
             <Button
                 type="submit"
@@ -85,3 +73,4 @@ const inputEmail = ref(props.email);
         </div>
     </Form>
 </template>
+

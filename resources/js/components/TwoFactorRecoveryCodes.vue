@@ -3,7 +3,7 @@ import { Form } from '@inertiajs/vue3';
 import { Eye, EyeOff, LockKeyhole, RefreshCw } from 'lucide-vue-next';
 import { nextTick, onMounted, ref, useTemplateRef } from 'vue';
 import AlertError from '@/components/AlertError.vue';
-import { Button } from '@/components/ui/button';
+import { AtomButton as Button } from '@/components/Atoms';
 import {
     Card,
     CardContent,
@@ -121,3 +121,4 @@ onMounted(async () => {
         </CardContent>
     </Card>
 </template>
+

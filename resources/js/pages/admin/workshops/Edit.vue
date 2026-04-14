@@ -34,8 +34,13 @@ defineOptions({
 <template>
     <Head :title="`Edit ${workshop.title}`" />
 
-    <div class="mx-auto max-w-3xl space-y-6 p-4">
-        <h1 class="text-2xl font-semibold">Edit workshop</h1>
+    <div class="page-shell py-6">
+        <div class="space-y-1">
+            <h1 class="text-2xl font-semibold">Edit workshop</h1>
+            <p class="text-sm text-muted-foreground">
+                Update workshop details and schedule information.
+            </p>
+        </div>
         <WorkshopForm
             :action="`/admin/workshops/${props.workshop.id}`"
             method="patch"

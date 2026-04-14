@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
+import { AtomButton as Button } from '@/components/Atoms';
 import { Spinner } from '@/components/ui/spinner';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
@@ -45,3 +45,4 @@ defineProps<{
         </TextLink>
     </Form>
 </template>
+

@@ -1,11 +1,4 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { home } from '@/routes';
-
-const page = usePage();
-const name = page.props.name;
-
 defineProps<{
     title?: string;
     description?: string;
@@ -13,27 +6,23 @@ defineProps<{
 </script>
 
 <template>
-    <div
-        class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0"
-    >
+    <div class="grid h-screen grid-cols-6 gap-x-2 bg-primary">
         <div
-            class="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r"
+            class="col-span-6 flex items-center justify-center px-6 py-8 md:order-2 md:col-span-3 md:px-10"
         >
-            <div class="absolute inset-0 bg-zinc-900" />
-            <Link
-                :href="home()"
-                class="relative z-20 flex items-center text-lg font-medium"
-            >
-                <AppLogoIcon class="mr-2 size-8 fill-current text-white" />
-                {{ name }}
-            </Link>
+            <img
+                src="/images/logo-big-light.png"
+                alt="Internal Academy"
+                class="w-full max-w-md object-contain"
+            />
         </div>
-        <div class="lg:p-8">
+
+        <div class="col-span-6 flex items-center justify-center px-6 py-8 md:col-span-3 md:px-10">
             <div
-                class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]"
+                class="w-full max-w-md rounded-lg bg-white p-6 shadow-sm sm:p-8"
             >
-                <div class="flex flex-col space-y-2 text-center">
-                    <h1 class="text-xl font-medium tracking-tight" v-if="title">
+                <div class="mb-6 space-y-1 text-left">
+                    <h1 class="text-xl font-semibold tracking-tight" v-if="title">
                         {{ title }}
                     </h1>
                     <p class="text-sm text-muted-foreground" v-if="description">

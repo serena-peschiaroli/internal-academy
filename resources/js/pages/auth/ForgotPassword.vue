@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
+import { AtomInput } from '@/components/Atoms';
 import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AtomButton as Button } from '@/components/Atoms';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
@@ -33,18 +31,16 @@ defineProps<{
 
     <div class="space-y-6">
         <Form v-bind="email.form()" v-slot="{ errors, processing }">
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    autocomplete="off"
-                    autofocus
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
+            <AtomInput
+                id="email"
+                type="email"
+                name="email"
+                label="Email address"
+                autocomplete="off"
+                autofocus
+                placeholder="email@example.com"
+                :error="errors.email"
+            />
 
             <div class="my-6 flex items-center justify-start">
                 <Button
@@ -64,3 +60,4 @@ defineProps<{
         </div>
     </div>
 </template>
+

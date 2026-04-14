@@ -2,8 +2,8 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/vue3';
 import { computed, ref, watchEffect } from 'vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { AtomButton as Button } from '@/components/Atoms';
+import { AtomInput as Input } from '@/components/Atoms';
 import {
     InputOTP,
     InputOTPGroup,
@@ -132,3 +132,5 @@ const code = ref<string>('');
         </template>
     </div>
 </template>
+
+

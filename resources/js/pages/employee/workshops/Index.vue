@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { AtomButton as Button } from '@/components/Atoms';
 
 type WorkshopItem = {
     id: number;
@@ -56,8 +56,8 @@ const page = usePage();
 <template>
     <Head title="Future workshops" />
 
-    <div class="space-y-6 p-4">
-        <div>
+    <div class="page-shell py-6">
+        <div class="section-card space-y-2">
             <h1 class="text-2xl font-semibold">Future workshops</h1>
             <p class="text-sm text-muted-foreground">
                 Browse upcoming internal academy sessions.
@@ -70,9 +70,9 @@ const page = usePage();
             </p>
         </div>
 
-        <div class="overflow-hidden rounded-lg border">
-            <table class="w-full text-sm">
-                <thead class="bg-muted/50 text-left">
+        <div class="data-table-wrapper">
+            <table class="data-table text-left">
+                <thead>
                     <tr>
                         <th class="px-4 py-3">Workshop</th>
                         <th class="px-4 py-3">Starts</th>
@@ -159,3 +159,4 @@ const page = usePage();
         </div>
     </div>
 </template>
+

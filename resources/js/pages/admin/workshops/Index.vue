@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { AtomButton as Button } from '@/components/Atoms';
+import { AtomInput as Input } from '@/components/Atoms';
 
 type WorkshopItem = {
     id: number;
@@ -82,7 +82,7 @@ const fmt = (value: string): string =>
 <template>
     <Head title="Admin workshops" />
 
-    <div class="space-y-6 p-4">
+    <div class="page-shell py-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <h1 class="text-2xl font-semibold">Workshop Management</h1>
             <Button as-child>
@@ -93,7 +93,7 @@ const fmt = (value: string): string =>
             </Button>
         </div>
 
-        <form class="grid gap-3 rounded-lg border p-4 md:grid-cols-[1fr_auto_auto]" @submit.prevent="applyFilters">
+        <form class="section-card grid gap-3 p-4 md:grid-cols-[1fr_auto_auto]" @submit.prevent="applyFilters">
             <Input
                 v-model="filterForm.q"
                 type="text"
@@ -115,9 +115,9 @@ const fmt = (value: string): string =>
             </div>
         </form>
 
-        <div class="overflow-hidden rounded-lg border">
-            <table class="w-full text-sm">
-                <thead class="bg-muted/50 text-left">
+        <div class="data-table-wrapper">
+            <table class="data-table text-left">
+                <thead>
                     <tr>
                         <th class="px-4 py-3">Title</th>
                         <th class="px-4 py-3">When</th>
@@ -171,3 +171,6 @@ const fmt = (value: string): string =>
         </div>
     </div>
 </template>
+
+
+

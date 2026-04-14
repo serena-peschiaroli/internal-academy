@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
+import { AtomInput } from '@/components/Atoms';
 import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AtomButton as Button } from '@/components/Atoms';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
@@ -23,70 +20,43 @@ defineOptions({
 
     <Form
         v-bind="store.form()"
-        :reset-on-success="['password', 'password_confirmation']"
         v-slot="{ errors, processing }"
         class="flex flex-col gap-6"
     >
         <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="name">Name</Label>
-                <Input
-                    id="name"
-                    type="text"
-                    required
-                    autofocus
-                    :tabindex="1"
-                    autocomplete="name"
-                    name="name"
-                    placeholder="Full name"
-                />
-                <InputError :message="errors.name" />
-            </div>
+            <AtomInput
+                id="name"
+                type="text"
+                label="Name"
+                required
+                autofocus
+                :tabindex="1"
+                autocomplete="name"
+                name="name"
+                placeholder="Full name"
+                :error="errors.name"
+            />
 
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    required
-                    :tabindex="2"
-                    autocomplete="email"
-                    name="email"
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
+            <AtomInput
+                id="email"
+                type="email"
+                label="Email address"
+                required
+                :tabindex="2"
+                autocomplete="email"
+                name="email"
+                placeholder="email@example.com"
+                :error="errors.email"
+            />
 
-            <div class="grid gap-2">
-                <Label for="password">Password</Label>
-                <PasswordInput
-                    id="password"
-                    required
-                    :tabindex="3"
-                    autocomplete="new-password"
-                    name="password"
-                    placeholder="Password"
-                />
-                <InputError :message="errors.password" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
-                <PasswordInput
-                    id="password_confirmation"
-                    required
-                    :tabindex="4"
-                    autocomplete="new-password"
-                    name="password_confirmation"
-                    placeholder="Confirm password"
-                />
-                <InputError :message="errors.password_confirmation" />
-            </div>
+            <p class="rounded-lg border border-gray-200 bg-[color:var(--color-light-gray)] px-3 py-2 text-sm text-muted-foreground">
+                A temporary password will be sent by email. At first login you will set a secure password.
+            </p>
 
             <Button
                 type="submit"
                 class="mt-2 w-full"
-                tabindex="5"
+                tabindex="3"
                 :disabled="processing"
                 data-test="register-user-button"
             >
@@ -100,9 +70,10 @@ defineOptions({
             <TextLink
                 :href="login()"
                 class="underline underline-offset-4"
-                :tabindex="6"
+                :tabindex="4"
                 >Log in</TextLink
             >
         </div>
     </Form>
 </template>
+
