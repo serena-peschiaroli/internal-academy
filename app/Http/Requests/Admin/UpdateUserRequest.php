@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use App\RoleType;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateUserRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return $this->user()?->isAdmin() ?? false;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $userId = $this->route('user')?->id ?? $this->route('user');
+
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'socials' => ['nullable', 'array'],
+            'socials.reddit' => ['nullable', 'url', 'max:255'],
+            'socials.linkedin' => ['nullable', 'url', 'max:255'],
+            'socials.facebook' => ['nullable', 'url', 'max:255'],
+            'socials.instagram' => ['nullable', 'url', 'max:255'],
+            'socials.website' => ['nullable', 'url', 'max:255'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_avatar' => ['nullable', 'boolean'],
+            'role' => ['required', 'string', Rule::in([
+                RoleType::ADMIN->value,
+                RoleType::EMPLOYEE->value,
+            ])],
+            'is_active' => ['required', 'boolean'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ];
+    }
+}
