@@ -2,7 +2,7 @@
 
 namespace App\Http\Responses;
 
-use App\RoleType;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 
 class RegisterResponse implements RegisterResponseContract
@@ -12,12 +12,12 @@ class RegisterResponse implements RegisterResponseContract
      */
     public function toResponse($request): mixed
     {
-        $user = $request->user();
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        $target = $user?->role?->key === RoleType::ADMIN
-            ? route('admin.workshops.index')
-            : route('workshops.index');
-
-        return redirect()->to($target);
+        return redirect()
+            ->route('login')
+            ->with('status', 'Account created. Check your email for the temporary password.');
     }
 }

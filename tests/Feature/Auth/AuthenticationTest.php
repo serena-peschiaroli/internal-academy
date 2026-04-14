@@ -22,6 +22,20 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('workshops.index', absolute: false));
 });
 
+test('inactive users are redirected to account inactive page', function () {
+    $user = User::factory()->create([
+        'is_active' => false,
+    ]);
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertRedirect(route('account-inactive', absolute: false));
+    $this->assertGuest();
+});
+
 test('users with two factor enabled are redirected to two factor challenge', function () {
     $this->skipUnlessFortifyFeature(Features::twoFactorAuthentication());
 
