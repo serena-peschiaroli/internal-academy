@@ -12,7 +12,7 @@ type Workshop = {
     capacity: number;
 };
 
-const props = withDefaults(
+withDefaults(
     defineProps<{
         action: string;
         method: 'post' | 'patch';

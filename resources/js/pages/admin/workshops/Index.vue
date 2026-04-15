@@ -166,8 +166,9 @@ const fmt = (value: string): string =>
                     'pointer-events-none opacity-40': !link.url,
                     'bg-primary text-primary-foreground': link.active,
                 }"
-                v-html="link.label"
-            />
+            >
+                <span v-html="link.label" />
+            </Link>
         </div>
     </div>
 </template>

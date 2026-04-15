@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight, Menu, X } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
-import UserMenuContent from '@/components/UserMenuContent.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
 import { sidebarItemsForRole } from '@/navigation/sidebar';
@@ -49,9 +49,6 @@ onMounted(() => {
     desktopSidebarOpen.value = localStorage.getItem('sidebar-expanded') !== 'false';
 });
 
-const logout = (): void => {
-    router.post('/logout');
-};
 </script>
 
 <template>

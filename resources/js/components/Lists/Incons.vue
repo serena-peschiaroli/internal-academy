@@ -1,8 +1,8 @@
 <template>
-
+    <div />
 </template>
 
-<script>
+<script lang="ts">
 import { h } from 'vue';
 
 // Eye Icon
