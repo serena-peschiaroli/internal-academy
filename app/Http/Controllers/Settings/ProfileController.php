@@ -107,7 +107,7 @@ class ProfileController extends Controller
             'saved_social_keys' => array_keys($user->socials ?? []),
         ]);
 
-        return to_route('profile.edit', ['user' => $user->id]);
+        return to_route('profile.edit');
     }
 
     /**

@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, ref } from 'vue';
 import { AtomButton as Button, AtomInput } from '@/components/Atoms';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
-import { edit } from '@/routes/profile';
+import { edit, update as updateProfile } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
 type Socials = {
@@ -98,13 +98,7 @@ const removeAvatar = (): void => {
 };
 
 const submit = (): void => {
-    form
-        .transform((data) => ({
-            ...data,
-            _method: 'patch',
-            remove_avatar: data.remove_avatar ? 1 : 0,
-        }))
-        .post('/settings/profile', {
+    form.patch(updateProfile.url(), {
         preserveScroll: true,
         forceFormData: true,
         onSuccess: () => {

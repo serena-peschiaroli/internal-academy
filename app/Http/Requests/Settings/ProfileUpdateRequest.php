@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Settings;
 
 use App\Concerns\ProfileValidationRules;
+use App\Concerns\ExtendedProfileValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
@@ -10,7 +11,7 @@ use Illuminate\Validation\Validator;
 
 class ProfileUpdateRequest extends FormRequest
 {
-    use ProfileValidationRules;
+    use ProfileValidationRules, ExtendedProfileValidationRules;
 
     /**
      * Get the validation rules that apply to the request.
@@ -21,15 +22,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             ...$this->profileRules($this->user()->id),
-            'phone' => ['nullable', 'string', 'max:50'],
-            'socials' => ['nullable', 'array'],
-            'socials.reddit' => ['nullable', 'url', 'max:255'],
-            'socials.linkedin' => ['nullable', 'url', 'max:255'],
-            'socials.facebook' => ['nullable', 'url', 'max:255'],
-            'socials.instagram' => ['nullable', 'url', 'max:255'],
-            'socials.website' => ['nullable', 'url', 'max:255'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'remove_avatar' => ['nullable', 'boolean'],
+            ...$this->extendedProfileRules(),
         ];
     }
 

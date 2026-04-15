@@ -81,6 +81,7 @@ const storageKey = computed(() => {
 const defaultVisibleColumns = computed<Record<string, boolean>>(() =>
     props.columns.reduce((acc, col) => {
         acc[col.key] = col.visible !== false;
+
         return acc;
     }, {} as Record<string, boolean>),
 );
@@ -129,18 +130,90 @@ const sortedRows = computed(() => {
         const aValue = a[key];
         const bValue = b[key];
 
-        if (aValue == null && bValue == null) return 0;
-        if (aValue == null) return 1;
-        if (bValue == null) return -1;
+        if (aValue == null && bValue == null) {
+return 0;
+}
 
-        const left = String(aValue).toLowerCase();
-        const right = String(bValue).toLowerCase();
+        if (aValue == null) {
+return 1;
+}
 
-        if (left === right) return 0;
-        if (direction === 'asc') return left > right ? 1 : -1;
-        return left > right ? -1 : 1;
+        if (bValue == null) {
+return -1;
+}
+
+        const leftNumber = toFiniteNumber(aValue);
+        const rightNumber = toFiniteNumber(bValue);
+
+        if (leftNumber !== null && rightNumber !== null) {
+            return direction === 'asc' ? leftNumber - rightNumber : rightNumber - leftNumber;
+        }
+
+        const leftTimestamp = toTimestamp(aValue);
+        const rightTimestamp = toTimestamp(bValue);
+
+        if (leftTimestamp !== null && rightTimestamp !== null) {
+            return direction === 'asc' ? leftTimestamp - rightTimestamp : rightTimestamp - leftTimestamp;
+        }
+
+        const left = String(aValue);
+        const right = String(bValue);
+
+        const result = left.localeCompare(right, undefined, { sensitivity: 'base', numeric: true });
+
+        return direction === 'asc' ? result : -result;
     });
 });
+
+const toFiniteNumber = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    const normalized = value.trim();
+
+    if (normalized === '') {
+        return null;
+    }
+
+    const parsed = Number(normalized);
+
+    return Number.isFinite(parsed) ? parsed : null;
+};
+
+const toTimestamp = (value: unknown): number | null => {
+    if (value instanceof Date) {
+        const time = value.getTime();
+
+        return Number.isFinite(time) ? time : null;
+    }
+
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    const normalized = value.trim();
+
+    if (normalized === '') {
+        return null;
+    }
+
+    const parsed = Date.parse(normalized);
+
+    return Number.isNaN(parsed) ? null : parsed;
+};
+
+const ariaSortFor = (key: string): 'none' | 'ascending' | 'descending' => {
+    if (sortKey.value !== key || !sortDirection.value) {
+        return 'none';
+    }
+
+    return sortDirection.value === 'asc' ? 'ascending' : 'descending';
+};
 
 const toggleSort = (key: string): void => {
     if (sortKey.value !== key) {
@@ -155,7 +228,9 @@ const toggleSort = (key: string): void => {
 };
 
 onMounted(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+return;
+}
 
     const saved = localStorage.getItem(storageKey.value);
     visibleColumns.value = saved ? JSON.parse(saved) : defaultVisibleColumns.value;
@@ -187,6 +262,7 @@ watch([sortKey, sortDirection], () => {
 onMounted(() => {
     activeFilters.value = props.filtersConfig.reduce((acc, filter) => {
         acc[filter.key] = '';
+
         return acc;
     }, {} as Record<string, string>);
 });
@@ -202,6 +278,7 @@ watch(
 const resetFilters = (): void => {
     activeFilters.value = props.filtersConfig.reduce((acc, filter) => {
         acc[filter.key] = '';
+
         return acc;
     }, {} as Record<string, string>);
 };
@@ -307,12 +384,14 @@ onMounted(() => {
                             v-for="col in displayedColumns"
                             :key="col.key"
                             class="px-4 py-3 text-left"
+                            :aria-sort="col.sortable ? ariaSortFor(col.key) : undefined"
                         >
                             <button
                                 v-if="col.sortable"
                                 type="button"
                                 class="inline-flex items-center gap-1 font-semibold"
                                 @click="toggleSort(col.key)"
+                                :aria-label="`Sort by ${col.label}`"
                             >
                                 <span>{{ col.label }}</span>
                                 <Eye

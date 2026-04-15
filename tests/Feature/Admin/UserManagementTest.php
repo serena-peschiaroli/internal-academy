@@ -4,7 +4,9 @@ use App\Models\Role;
 use App\Models\User;
 use App\Mail\TemporaryPasswordMail;
 use App\RoleType;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 function createAdminUserForManagement(): User
@@ -107,7 +109,8 @@ test('admin can update and delete a user', function () {
     expect($targetUser->name)->toBe('Updated Employee')
         ->and($targetUser->email)->toBe('updated-employee@example.com')
         ->and($targetUser->role?->key)->toBe(RoleType::ADMIN)
-        ->and($targetUser->is_active)->toBeFalse();
+        ->and($targetUser->is_active)->toBeFalse()
+        ->and($targetUser->email_verified_at)->toBeNull();
 
     $deleteResponse = $this->actingAs($admin)
         ->delete(route('admin.users.destroy', $targetUser));
@@ -117,6 +120,23 @@ test('admin can update and delete a user', function () {
     $this->assertDatabaseMissing('users', [
         'id' => $targetUser->id,
     ]);
+});
+
+test('admin user deletion also removes stored avatar', function () {
+    Storage::fake('public');
+
+    $admin = createAdminUserForManagement();
+    $targetUser = createEmployeeUserForManagement();
+    $avatarPath = UploadedFile::fake()->image('user-avatar.jpg')->store('avatars', 'public');
+    $targetUser->update(['avatar' => $avatarPath]);
+
+    Storage::disk('public')->assertExists($avatarPath);
+
+    $this->actingAs($admin)
+        ->delete(route('admin.users.destroy', $targetUser))
+        ->assertRedirect(route('admin.users.index'));
+
+    Storage::disk('public')->assertMissing($avatarPath);
 });
 
 test('employee cannot access admin user creation flow', function () {

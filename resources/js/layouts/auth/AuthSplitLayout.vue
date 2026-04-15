@@ -6,7 +6,7 @@ defineProps<{
 </script>
 
 <template>
-    <div class="grid h-screen grid-cols-6 gap-x-2 bg-primary">
+    <div class="grid min-h-svh grid-cols-6 gap-x-2 bg-primary">
         <div
             class="col-span-6 flex items-center justify-center px-6 py-8 md:order-2 md:col-span-3 md:px-10"
         >

@@ -25,20 +25,56 @@ const page = usePage();
 const user = computed(() => page.props.auth.user);
 const roleKey = computed(() => page.props.auth.user.role?.key ?? 'employee');
 
+const normalizePath = (path: string): string => {
+    if (!path) {
+return '/';
+}
+
+    const cleaned = path.split('?')[0].split('#')[0];
+
+    if (cleaned === '/') {
+return '/';
+}
+
+    return cleaned.replace(/\/+$/, '');
+};
+
 const currentPath = computed(() => {
     try {
-        return new URL(page.url, window.location.origin).pathname;
+        return normalizePath(new URL(page.url, window.location.origin).pathname);
     } catch {
-        return page.url;
+        return normalizePath(page.url);
     }
 });
-const isActive = (path: string): boolean => currentPath.value === path;
+const isActive = (path: string): boolean => {
+    const target = normalizePath(path);
+
+    if (target === '/') {
+return currentPath.value === '/';
+}
+
+    return currentPath.value === target || currentPath.value.startsWith(`${target}/`);
+};
 
 const mobileSidebarOpen = ref(false);
 const desktopSidebarOpen = ref(true);
 
 const navItems = computed(() => sidebarItemsForRole(roleKey.value));
 const navHref = (href: unknown): string => toUrl(href as string);
+const userAvatar = computed(() => {
+    const avatar = (user.value as { avatar?: string | null; avatar_url?: string | null } | null)?.avatar_url
+        ?? (user.value as { avatar?: string | null } | null)?.avatar;
+
+    if (!avatar) {
+return null;
+}
+
+    if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('/')) {
+return avatar;
+}
+
+    return `/storage/${avatar}`;
+});
 
 const toggleDesktopSidebar = (): void => {
     desktopSidebarOpen.value = !desktopSidebarOpen.value;
@@ -194,8 +230,8 @@ onMounted(() => {
                             <span class="sr-only">Open user menu</span>
                             <Avatar class="size-8 overflow-hidden rounded-full">
                                 <AvatarImage
-                                    v-if="user.avatar"
-                                    :src="user.avatar"
+                                    v-if="userAvatar"
+                                    :src="userAvatar"
                                     :alt="user.name"
                                 />
                                 <AvatarFallback class="bg-white/20 text-white">

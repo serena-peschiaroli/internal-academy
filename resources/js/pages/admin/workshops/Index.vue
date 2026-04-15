@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
+import { ref } from 'vue';
 import { AtomButton as Button } from '@/components/Atoms';
 import { AtomInput as Input } from '@/components/Atoms';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 type WorkshopItem = {
     id: number;
@@ -66,9 +76,17 @@ const resetFilters = () => {
     applyFilters();
 };
 
+const workshopToDelete = ref<WorkshopItem | null>(null);
+const deletingWorkshopId = ref<number | null>(null);
+
 const destroyWorkshop = (id: number) => {
+    deletingWorkshopId.value = id;
     router.delete(`/admin/workshops/${id}`, {
         preserveScroll: true,
+        onFinish: () => {
+            deletingWorkshopId.value = null;
+            workshopToDelete.value = null;
+        },
     });
 };
 
@@ -140,7 +158,7 @@ const fmt = (value: string): string =>
                                 <Button as-child size="sm" variant="outline">
                                     <Link :href="`/admin/workshops/${workshop.id}/edit`">Edit</Link>
                                 </Button>
-                                <Button size="sm" variant="destructive" @click="destroyWorkshop(workshop.id)">
+                                <Button size="sm" variant="destructive" @click="workshopToDelete = workshop">
                                     Delete
                                 </Button>
                             </div>
@@ -156,20 +174,47 @@ const fmt = (value: string): string =>
         </div>
 
         <div class="flex flex-wrap gap-2">
-            <Link
-                v-for="link in workshops.links"
-                :key="link.label"
-                :href="link.url ?? ''"
-                preserve-scroll
-                class="rounded-md border px-3 py-1 text-sm"
-                :class="{
-                    'pointer-events-none opacity-40': !link.url,
-                    'bg-primary text-primary-foreground': link.active,
-                }"
-            >
-                <span v-html="link.label" />
-            </Link>
+            <template v-for="link in workshops.links" :key="link.label">
+                <Link
+                    v-if="link.url"
+                    :href="link.url"
+                    preserve-scroll
+                    class="rounded-md border px-3 py-1 text-sm"
+                    :class="{ 'bg-primary text-primary-foreground': link.active }"
+                >
+                    <span v-html="link.label" />
+                </Link>
+                <span v-else class="pointer-events-none rounded-md border px-3 py-1 text-sm opacity-40">
+                    <span v-html="link.label" />
+                </span>
+            </template>
         </div>
+
+        <Dialog :open="Boolean(workshopToDelete)" @update:open="(open) => !open && (workshopToDelete = null)">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete workshop</DialogTitle>
+                    <DialogDescription>
+                        This action cannot be undone. The workshop
+                        <strong v-if="workshopToDelete"> "{{ workshopToDelete.title }}"</strong>
+                        will be permanently deleted.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter class="gap-2">
+                    <DialogClose as-child>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button
+                        variant="destructive"
+                        :loading="deletingWorkshopId === workshopToDelete?.id"
+                        :disabled="deletingWorkshopId === workshopToDelete?.id"
+                        @click="workshopToDelete && destroyWorkshop(workshopToDelete.id)"
+                    >
+                        Delete workshop
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
 </template>
 

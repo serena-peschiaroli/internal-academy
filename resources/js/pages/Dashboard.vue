@@ -2,6 +2,7 @@
 import { Head, usePage } from '@inertiajs/vue3';
 import { CalendarCheck2, Settings2, Users, UserCheck2 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { AtomButton as Button } from '@/components/Atoms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboard } from '@/routes';
 
@@ -74,6 +75,14 @@ const fmt = (value: string): string =>
         timeStyle: 'short',
     });
 
+const lastUpdatedLabel = computed(() => {
+    if (!adminStats.value?.generated_at) {
+        return null;
+    }
+
+    return fmt(adminStats.value.generated_at);
+});
+
 onMounted(() => {
     if (!isAdmin.value) {
         return;
@@ -107,6 +116,11 @@ onBeforeUnmount(() => {
                 <CardContent>
                     <div v-if="adminStatsError" class="text-sm text-destructive">
                         {{ adminStatsError }}
+                        <div class="mt-3">
+                            <Button size="sm" variant="outline" @click="loadAdminStats">
+                                Retry
+                            </Button>
+                        </div>
                     </div>
                     <template v-else-if="adminStats">
                         <CardDescription>
@@ -117,6 +131,9 @@ onBeforeUnmount(() => {
                         </CardDescription>
                         <CardDescription>
                             Upcoming workshops: <strong>{{ adminStats.workshops_count }}</strong>
+                        </CardDescription>
+                        <CardDescription v-if="lastUpdatedLabel">
+                            Last updated: <strong>{{ lastUpdatedLabel }}</strong>
                         </CardDescription>
                     </template>
                     <CardDescription v-else>

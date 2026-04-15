@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
-import { Badge } from '@/components/ui/badge';
+import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { AtomButton as Button } from '@/components/Atoms';
+import { Badge } from '@/components/ui/badge';
 
 type WorkshopItem = {
     id: number;
@@ -145,17 +145,20 @@ const page = usePage();
         </div>
 
         <div class="flex flex-wrap gap-2">
-            <a
-                v-for="link in workshops.links"
-                :key="link.label"
-                :href="link.url ?? '#'"
-                class="rounded-md border px-3 py-1 text-sm"
-                :class="{
-                    'pointer-events-none opacity-40': !link.url,
-                    'bg-primary text-primary-foreground': link.active,
-                }"
-                v-html="link.label"
-            />
+            <template v-for="link in workshops.links" :key="link.label">
+                <Link
+                    v-if="link.url"
+                    :href="link.url"
+                    preserve-scroll
+                    class="rounded-md border px-3 py-1 text-sm"
+                    :class="{ 'bg-primary text-primary-foreground': link.active }"
+                >
+                    <span v-html="link.label" />
+                </Link>
+                <span v-else class="pointer-events-none rounded-md border px-3 py-1 text-sm opacity-40">
+                    <span v-html="link.label" />
+                </span>
+            </template>
         </div>
     </div>
 </template>

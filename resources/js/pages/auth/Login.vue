@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import { AtomInput, AtomPasswordInput } from '@/components/Atoms';
-import TextLink from '@/components/TextLink.vue';
 import { AtomButton as Button } from '@/components/Atoms';
+import TextLink from '@/components/TextLink.vue';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -48,7 +48,6 @@ defineProps<{
                 label="Email address"
                 required
                 autofocus
-                :tabindex="1"
                 autocomplete="email"
                 placeholder="email@example.com"
                 :error="errors.email"
@@ -61,7 +60,6 @@ defineProps<{
                         v-if="canResetPassword"
                         :href="request()"
                         class="text-sm"
-                        :tabindex="5"
                     >
                         Forgot password?
                     </TextLink>
@@ -70,7 +68,6 @@ defineProps<{
                     id="password"
                     name="password"
                     required
-                    :tabindex="2"
                     autocomplete="current-password"
                     placeholder="Password"
                     :error="errors.password"
@@ -80,7 +77,7 @@ defineProps<{
 
             <div class="flex items-center justify-between">
                 <Label for="remember" class="flex items-center space-x-3">
-                    <Checkbox id="remember" name="remember" :tabindex="3" />
+                    <Checkbox id="remember" name="remember" />
                     <span>Remember me</span>
                 </Label>
             </div>
@@ -88,7 +85,6 @@ defineProps<{
             <Button
                 type="submit"
                 class="mt-4 w-full"
-                :tabindex="4"
                 :disabled="processing"
                 data-test="login-button"
             >
@@ -102,7 +98,7 @@ defineProps<{
             v-if="canRegister"
         >
             Don't have an account?
-            <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+            <TextLink :href="register()">Sign up</TextLink>
         </div>
     </Form>
 </template>

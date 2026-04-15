@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\ExtendedProfileValidationRules;
 use App\RoleType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Rule;
 
 class UpdateUserRequest extends FormRequest
 {
+    use ExtendedProfileValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,15 +32,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'socials' => ['nullable', 'array'],
-            'socials.reddit' => ['nullable', 'url', 'max:255'],
-            'socials.linkedin' => ['nullable', 'url', 'max:255'],
-            'socials.facebook' => ['nullable', 'url', 'max:255'],
-            'socials.instagram' => ['nullable', 'url', 'max:255'],
-            'socials.website' => ['nullable', 'url', 'max:255'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'remove_avatar' => ['nullable', 'boolean'],
+            ...$this->extendedProfileRules(),
             'role' => ['required', 'string', Rule::in([
                 RoleType::ADMIN->value,
                 RoleType::EMPLOYEE->value,

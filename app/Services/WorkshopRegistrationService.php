@@ -11,6 +11,19 @@ use Illuminate\Validation\ValidationException;
 
 class WorkshopRegistrationService
 {
+    protected function hasOverlappingConfirmedWorkshop(int $userId, Workshop $workshop): bool
+    {
+        return Registration::query()
+            ->where('user_id', $userId)
+            ->where('status', RegistrationStatus::CONFIRMED->value)
+            ->whereHas('workshop', function ($query) use ($workshop): void {
+                $query->where('starts_at', '<', $workshop->ends_at)
+                    ->where('ends_at', '>', $workshop->starts_at);
+            })
+            ->lockForUpdate()
+            ->exists();
+    }
+
     /**
      * Register user to workshop using a transaction and row locks.
      *
@@ -48,15 +61,7 @@ class WorkshopRegistrationService
                 ->lockForUpdate()
                 ->count();
 
-            $overlappingConfirmedWorkshop = Registration::query()
-                ->where('user_id', $user->id)
-                ->where('status', RegistrationStatus::CONFIRMED->value)
-                ->whereHas('workshop', function ($query) use ($lockedWorkshop): void {
-                    $query->where('starts_at', '<', $lockedWorkshop->ends_at)
-                        ->where('ends_at', '>', $lockedWorkshop->starts_at);
-                })
-                ->lockForUpdate()
-                ->exists();
+            $overlappingConfirmedWorkshop = $this->hasOverlappingConfirmedWorkshop($user->id, $lockedWorkshop);
 
             if ($overlappingConfirmedWorkshop) {
                 throw ValidationException::withMessages([
@@ -128,19 +133,28 @@ class WorkshopRegistrationService
                 return;
             }
 
-            $nextWaitlistedRegistration = Registration::query()
+            $waitlistedRegistrations = Registration::query()
                 ->where('workshop_id', $lockedWorkshop->id)
                 ->where('status', RegistrationStatus::WAITLISTED->value)
                 ->orderBy('waitlist_position')
                 ->orderBy('id')
                 ->lockForUpdate()
-                ->first();
+                ->get();
 
-            if (! $nextWaitlistedRegistration) {
+            $nextEligibleRegistration = null;
+
+            foreach ($waitlistedRegistrations as $waitlistedRegistration) {
+                if (! $this->hasOverlappingConfirmedWorkshop($waitlistedRegistration->user_id, $lockedWorkshop)) {
+                    $nextEligibleRegistration = $waitlistedRegistration;
+                    break;
+                }
+            }
+
+            if (! $nextEligibleRegistration) {
                 return;
             }
 
-            $nextWaitlistedRegistration->update([
+            $nextEligibleRegistration->update([
                 'status' => RegistrationStatus::CONFIRMED->value,
                 'waitlist_position' => null,
             ]);

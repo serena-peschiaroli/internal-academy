@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Admin\WorkshopController;
 use App\Http\Controllers\Admin\WorkshopStatsController;
-use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\SecurePasswordController;
 use App\Http\Controllers\Employee\WorkshopCatalogController;
 use App\Http\Controllers\Employee\WorkshopRegistrationController;
@@ -44,8 +44,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->as('admin.')
     ->group(function () {
         Route::resource('workshops', WorkshopController::class)->except('show');
-        Route::resource('users', UserManagementController::class)->except('destroy');
-        Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+        Route::resource('users', AdminUserController::class)->except('destroy');
+        Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::get('stats/workshops', WorkshopStatsController::class)->name('stats.workshops');
     });
 

@@ -3,6 +3,15 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { AtomButton as Button, AtomTabs } from '@/components/Atoms';
 import DataTable from '@/components/DataTable/index.vue';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 type UserRow = {
     id: number;
@@ -75,6 +84,7 @@ const columns = [
         sortable: true,
         format: (row: Record<string, unknown>) => {
             const value = row.created_at as string | null;
+
             return value
                 ? new Date(value).toLocaleDateString('it-IT', { dateStyle: 'medium' })
                 : '-';
@@ -115,10 +125,18 @@ const filtersConfig: Array<{
 ];
 
 const deleteUser = (id: number): void => {
+    deletingUserId.value = id;
     router.delete(`/admin/users/${id}`, {
         preserveScroll: true,
+        onFinish: () => {
+            deletingUserId.value = null;
+            userToDelete.value = null;
+        },
     });
 };
+
+const userToDelete = ref<UserRow | null>(null);
+const deletingUserId = ref<number | null>(null);
 </script>
 
 <template>
@@ -153,11 +171,37 @@ const deleteUser = (id: number): void => {
                     <Button as-child size="sm" variant="outline">
                         <Link :href="`/admin/users/${row.id}/edit`">Edit</Link>
                     </Button>
-                    <Button size="sm" variant="destructive" @click="deleteUser(row.id as number)">
+                    <Button size="sm" variant="destructive" @click="userToDelete = row as UserRow">
                         Delete
                     </Button>
                 </div>
             </template>
         </DataTable>
+
+        <Dialog :open="Boolean(userToDelete)" @update:open="(open) => !open && (userToDelete = null)">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete user</DialogTitle>
+                    <DialogDescription>
+                        This action cannot be undone. The account
+                        <strong v-if="userToDelete"> "{{ userToDelete.name }}"</strong>
+                        will be permanently deleted.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter class="gap-2">
+                    <DialogClose as-child>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button
+                        variant="destructive"
+                        :loading="deletingUserId === userToDelete?.id"
+                        :disabled="deletingUserId === userToDelete?.id"
+                        @click="userToDelete && deleteUser(userToDelete.id)"
+                    >
+                        Delete user
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
 </template>

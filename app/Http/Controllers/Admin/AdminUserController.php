@@ -19,7 +19,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 
-class UserManagementController extends Controller
+class AdminUserController extends Controller
 {
     /**
      * Show admin/employee user lists.
@@ -130,6 +130,8 @@ class UserManagementController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
+        $emailChanged = $request->string('email')->toString() !== $user->email;
+
         $role = Role::query()->firstOrCreate(
             ['key' => $request->string('role')->toString()],
             ['name' => ucfirst($request->string('role')->toString())],
@@ -161,7 +163,13 @@ class UserManagementController extends Controller
             $payload['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
-        $user->update($payload);
+        $user->fill($payload);
+
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return to_route('admin.users.index');
     }
@@ -177,6 +185,10 @@ class UserManagementController extends Controller
             return back()->withErrors([
                 'delete' => 'You cannot delete your own account from this page.',
             ]);
+        }
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
         }
 
         $user->delete();
