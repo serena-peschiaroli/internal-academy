@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
-use App\RegistrationStatus;
+use App\Events\WorkshopStatsUpdated;
 use App\Models\Registration;
 use App\Models\User;
 use App\Models\Workshop;
+use App\RegistrationStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -93,6 +94,8 @@ class WorkshopRegistrationService
                 'waitlist_position' => null,
             ]);
         }, 3);
+
+        WorkshopStatsUpdated::dispatch();
     }
 
     /**
@@ -159,5 +162,7 @@ class WorkshopRegistrationService
                 'waitlist_position' => null,
             ]);
         }, 3);
+
+        WorkshopStatsUpdated::dispatch();
     }
 }

@@ -8,8 +8,8 @@ use App\RegistrationStatus;
 use App\RoleType;
 use App\Services\WorkshopRegistrationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
@@ -49,11 +49,7 @@ test('register throws validation exception when workshop overlaps with an alread
         'capacity' => 10,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $employee->id,
-        'workshop_id' => $confirmedWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
+    Registration::factory()->confirmed()->for($employee)->for($confirmedWorkshop)->create();
 
     expect(fn () => $service->register($employee, $overlappingWorkshop))
         ->toThrow(ValidationException::class, 'You cannot register for overlapping workshops.');
@@ -84,31 +80,10 @@ test('cancel promotes first non-overlapping waitlisted user when head of queue h
         'capacity' => 5,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $confirmed->id,
-        'workshop_id' => $targetWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedConflicting->id,
-        'workshop_id' => $targetWorkshop->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 1,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedEligible->id,
-        'workshop_id' => $targetWorkshop->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 2,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedConflicting->id,
-        'workshop_id' => $conflictingWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
+    Registration::factory()->confirmed()->for($confirmed)->for($targetWorkshop)->create();
+    Registration::factory()->waitlisted(1)->for($waitlistedConflicting)->for($targetWorkshop)->create();
+    Registration::factory()->waitlisted(2)->for($waitlistedEligible)->for($targetWorkshop)->create();
+    Registration::factory()->confirmed()->for($waitlistedConflicting)->for($conflictingWorkshop)->create();
 
     $service->cancel($confirmed, $targetWorkshop);
 
@@ -161,37 +136,11 @@ test('cancel does not promote anyone when all waitlisted users overlap', functio
         'capacity' => 5,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $confirmed->id,
-        'workshop_id' => $targetWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedOne->id,
-        'workshop_id' => $targetWorkshop->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 1,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedTwo->id,
-        'workshop_id' => $targetWorkshop->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 2,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedOne->id,
-        'workshop_id' => $conflictingWorkshopOne->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedTwo->id,
-        'workshop_id' => $conflictingWorkshopTwo->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
+    Registration::factory()->confirmed()->for($confirmed)->for($targetWorkshop)->create();
+    Registration::factory()->waitlisted(1)->for($waitlistedOne)->for($targetWorkshop)->create();
+    Registration::factory()->waitlisted(2)->for($waitlistedTwo)->for($targetWorkshop)->create();
+    Registration::factory()->confirmed()->for($waitlistedOne)->for($conflictingWorkshopOne)->create();
+    Registration::factory()->confirmed()->for($waitlistedTwo)->for($conflictingWorkshopTwo)->create();
 
     $service->cancel($confirmed, $targetWorkshop);
 

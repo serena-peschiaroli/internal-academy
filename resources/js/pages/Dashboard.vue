@@ -34,12 +34,14 @@ type AdminWorkshopStats = {
     generated_at: string;
 };
 
-const POLL_INTERVAL_MS = 10000;
+// Fallback poll interval used only when the WebSocket connection is unavailable.
+const FALLBACK_POLL_INTERVAL_MS = 15000;
 
 const adminStats = ref<AdminWorkshopStats | null>(null);
 const loadingAdminStats = ref(false);
 const adminStatsError = ref<string | null>(null);
-let pollIntervalId: number | null = null;
+const isSocketConnected = ref(false);
+let fallbackPollId: number | null = null;
 
 const loadAdminStats = async (): Promise<void> => {
     if (!isAdmin.value || loadingAdminStats.value) {
@@ -69,6 +71,18 @@ const loadAdminStats = async (): Promise<void> => {
     }
 };
 
+const startFallbackPolling = (): void => {
+    if (fallbackPollId !== null) return;
+    fallbackPollId = window.setInterval(() => void loadAdminStats(), FALLBACK_POLL_INTERVAL_MS);
+};
+
+const stopFallbackPolling = (): void => {
+    if (fallbackPollId !== null) {
+        window.clearInterval(fallbackPollId);
+        fallbackPollId = null;
+    }
+};
+
 const fmt = (value: string): string =>
     new Date(value).toLocaleString('it-IT', {
         dateStyle: 'short',
@@ -88,18 +102,41 @@ onMounted(() => {
         return;
     }
 
+    // Initial fetch — populates the dashboard before the first push arrives.
     void loadAdminStats();
 
-    pollIntervalId = window.setInterval(() => {
-        void loadAdminStats();
-    }, POLL_INTERVAL_MS);
+    // Subscribe to the private admin channel via Reverb WebSocket.
+    const channel = window.Echo.private('admin.workshop-stats');
+
+    channel
+        .listen('.stats.updated', (event: { stats: AdminWorkshopStats }) => {
+            adminStats.value = event.stats;
+            adminStatsError.value = null;
+        })
+        .subscribed(() => {
+            isSocketConnected.value = true;
+            stopFallbackPolling();
+        })
+        .error(() => {
+            isSocketConnected.value = false;
+            startFallbackPolling();
+        });
+
+    // If the connection drops later, switch to polling until it recovers.
+    window.Echo.connector.pusher.connection.bind('disconnected', () => {
+        isSocketConnected.value = false;
+        startFallbackPolling();
+    });
+
+    window.Echo.connector.pusher.connection.bind('connected', () => {
+        isSocketConnected.value = true;
+        stopFallbackPolling();
+    });
 });
 
 onBeforeUnmount(() => {
-    if (pollIntervalId !== null) {
-        window.clearInterval(pollIntervalId);
-        pollIntervalId = null;
-    }
+    window.Echo.leave('admin.workshop-stats');
+    stopFallbackPolling();
 });
 </script>
 
@@ -187,9 +224,14 @@ onBeforeUnmount(() => {
                     <Settings2 class="size-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <CardDescription v-if="isAdmin">
-                        Stats auto-refresh every 10 seconds (polling).
-                    </CardDescription>
+                    <template v-if="isAdmin">
+                        <CardDescription v-if="isSocketConnected">
+                            Live updates via WebSocket (Reverb).
+                        </CardDescription>
+                        <CardDescription v-else>
+                            WebSocket unavailable — polling every {{ FALLBACK_POLL_INTERVAL_MS / 1000 }}s.
+                        </CardDescription>
+                    </template>
                     <CardDescription v-else>
                         Update profile and security preferences.
                     </CardDescription>

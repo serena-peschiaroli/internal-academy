@@ -63,11 +63,7 @@ test('workshop and registration policies enforce role capabilities', function ()
         'capacity' => 20,
     ]);
 
-    $registration = Registration::query()->create([
-        'user_id' => $employee->id,
-        'workshop_id' => $workshop->id,
-        'status' => 'confirmed',
-    ]);
+    $registration = Registration::factory()->confirmed()->for($employee)->for($workshop)->create();
 
     expect(Gate::forUser($admin)->allows('create', Workshop::class))->toBeTrue()
         ->and(Gate::forUser($employee)->allows('create', Workshop::class))->toBeFalse()
@@ -76,4 +72,3 @@ test('workshop and registration policies enforce role capabilities', function ()
         ->and(Gate::forUser($employee)->allows('delete', $registration))->toBeTrue()
         ->and(Gate::forUser($otherEmployee)->allows('delete', $registration))->toBeFalse();
 });
-

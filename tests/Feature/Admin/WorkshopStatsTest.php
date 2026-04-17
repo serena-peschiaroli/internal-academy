@@ -4,7 +4,6 @@ use App\Models\Registration;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Workshop;
-use App\RegistrationStatus;
 use App\RoleType;
 use Illuminate\Support\Str;
 
@@ -53,36 +52,11 @@ test('admin can fetch workshop stats for dashboard polling', function () {
         'capacity' => 10,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $employeeOne->id,
-        'workshop_id' => $popularWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $employeeTwo->id,
-        'workshop_id' => $popularWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $employeeThree->id,
-        'workshop_id' => $popularWorkshop->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 1,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $employeeOne->id,
-        'workshop_id' => $secondWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $employeeTwo->id,
-        'workshop_id' => $pastWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
+    Registration::factory()->confirmed()->for($employeeOne)->for($popularWorkshop)->create();
+    Registration::factory()->confirmed()->for($employeeTwo)->for($popularWorkshop)->create();
+    Registration::factory()->waitlisted(1)->for($employeeThree)->for($popularWorkshop)->create();
+    Registration::factory()->confirmed()->for($employeeOne)->for($secondWorkshop)->create();
+    Registration::factory()->confirmed()->for($employeeTwo)->for($pastWorkshop)->create();
 
     $this->actingAs($admin)
         ->getJson(route('admin.stats.workshops'))
@@ -101,4 +75,80 @@ test('employee cannot fetch admin workshop stats endpoint', function () {
     $this->actingAs($employee)
         ->getJson(route('admin.stats.workshops'))
         ->assertForbidden();
+});
+
+test('stats endpoint returns zeros and null most_popular when no workshops exist', function () {
+    $admin = createStatsUserWithRole(RoleType::ADMIN);
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.stats.workshops'))
+        ->assertOk()
+        ->assertJsonPath('workshops_count', 0)
+        ->assertJsonPath('confirmed_registrations_count', 0)
+        ->assertJsonPath('waitlisted_registrations_count', 0)
+        ->assertJsonPath('most_popular_workshop', null);
+});
+
+test('stats endpoint excludes past workshops and their registrations from all counts', function () {
+    $admin = createStatsUserWithRole(RoleType::ADMIN);
+    $employeeOne = createStatsUserWithRole(RoleType::EMPLOYEE);
+    $employeeTwo = createStatsUserWithRole(RoleType::EMPLOYEE);
+
+    $pastWorkshop = Workshop::query()->create([
+        'user_id' => $admin->id,
+        'title' => 'Past Workshop',
+        'description' => 'Already over',
+        'starts_at' => now()->subDays(2),
+        'ends_at' => now()->subDay(),
+        'capacity' => 10,
+    ]);
+
+    Registration::factory()->confirmed()->for($employeeOne)->for($pastWorkshop)->create();
+    Registration::factory()->waitlisted(1)->for($employeeTwo)->for($pastWorkshop)->create();
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.stats.workshops'))
+        ->assertOk()
+        ->assertJsonPath('workshops_count', 0)
+        ->assertJsonPath('confirmed_registrations_count', 0)
+        ->assertJsonPath('waitlisted_registrations_count', 0)
+        ->assertJsonPath('most_popular_workshop', null);
+});
+
+test('stats most_popular_workshop breaks ties by earliest start date', function () {
+    $admin = createStatsUserWithRole(RoleType::ADMIN);
+    $employeeOne = createStatsUserWithRole(RoleType::EMPLOYEE);
+    $employeeTwo = createStatsUserWithRole(RoleType::EMPLOYEE);
+
+    // Two workshops with identical confirmed count — earlier one must win.
+    $earlier = Workshop::query()->create([
+        'user_id' => $admin->id,
+        'title' => 'Earlier Workshop',
+        'description' => 'Starts first',
+        'starts_at' => now()->addDays(1),
+        'ends_at' => now()->addDays(1)->addHour(),
+        'capacity' => 10,
+    ]);
+
+    $later = Workshop::query()->create([
+        'user_id' => $admin->id,
+        'title' => 'Later Workshop',
+        'description' => 'Starts second',
+        'starts_at' => now()->addDays(5),
+        'ends_at' => now()->addDays(5)->addHour(),
+        'capacity' => 10,
+    ]);
+
+    Registration::factory()->confirmed()->for($employeeOne)->for($earlier)->create();
+    Registration::factory()->confirmed()->for($employeeTwo)->for($later)->create();
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.stats.workshops'))
+        ->assertOk()
+        ->assertJsonPath('most_popular_workshop.id', $earlier->id);
+});
+
+test('unauthenticated request to stats endpoint is redirected', function () {
+    $this->getJson(route('admin.stats.workshops'))
+        ->assertUnauthorized();
 });

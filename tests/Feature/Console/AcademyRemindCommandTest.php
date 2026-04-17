@@ -5,7 +5,6 @@ use App\Models\Registration;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Workshop;
-use App\RegistrationStatus;
 use App\RoleType;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -51,30 +50,10 @@ test('academy remind sends reminders only to confirmed participants of tomorrow 
         'capacity' => 2,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $confirmedOne->id,
-        'workshop_id' => $workshopTomorrow->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $confirmedTwo->id,
-        'workshop_id' => $workshopTomorrow->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlisted->id,
-        'workshop_id' => $workshopTomorrow->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 1,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $confirmedOtherDay->id,
-        'workshop_id' => $workshopOtherDay->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
+    Registration::factory()->confirmed()->for($confirmedOne)->for($workshopTomorrow)->create();
+    Registration::factory()->confirmed()->for($confirmedTwo)->for($workshopTomorrow)->create();
+    Registration::factory()->waitlisted(1)->for($waitlisted)->for($workshopTomorrow)->create();
+    Registration::factory()->confirmed()->for($confirmedOtherDay)->for($workshopOtherDay)->create();
 
     $this->artisan('academy:remind')
         ->assertSuccessful()

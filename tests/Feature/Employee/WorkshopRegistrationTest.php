@@ -39,7 +39,7 @@ test('employee can register to a future workshop when seats are available', func
     $this->assertDatabaseHas('registrations', [
         'user_id' => $employee->id,
         'workshop_id' => $workshop->id,
-        'status' => 'confirmed',
+        'status' => RegistrationStatus::CONFIRMED->value,
     ]);
 });
 
@@ -56,11 +56,7 @@ test('employee cannot register twice to the same workshop', function () {
         'capacity' => 5,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $employee->id,
-        'workshop_id' => $workshop->id,
-        'status' => 'confirmed',
-    ]);
+    Registration::factory()->confirmed()->for($employee)->for($workshop)->create();
 
     $response = $this->actingAs($employee)->from(route('workshops.index'))
         ->post(route('workshops.registrations.store', $workshop));
@@ -88,11 +84,7 @@ test('employee is waitlisted when workshop is full', function () {
         'capacity' => 1,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $otherEmployee->id,
-        'workshop_id' => $workshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
+    Registration::factory()->confirmed()->for($otherEmployee)->for($workshop)->create();
 
     $response = $this->actingAs($employee)->from(route('workshops.index'))
         ->post(route('workshops.registrations.store', $workshop));
@@ -120,11 +112,7 @@ test('employee can cancel own registration', function () {
         'capacity' => 10,
     ]);
 
-    $registration = Registration::query()->create([
-        'user_id' => $employee->id,
-        'workshop_id' => $workshop->id,
-        'status' => 'confirmed',
-    ]);
+    $registration = Registration::factory()->confirmed()->for($employee)->for($workshop)->create();
 
     $response = $this->actingAs($employee)
         ->delete(route('workshops.registrations.destroy', $workshop));
@@ -171,25 +159,9 @@ test('first user in waiting list is promoted when a confirmed participant cancel
         'capacity' => 1,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $confirmed->id,
-        'workshop_id' => $workshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedOne->id,
-        'workshop_id' => $workshop->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 1,
-    ]);
-
-    Registration::query()->create([
-        'user_id' => $waitlistedTwo->id,
-        'workshop_id' => $workshop->id,
-        'status' => RegistrationStatus::WAITLISTED->value,
-        'waitlist_position' => 2,
-    ]);
+    Registration::factory()->confirmed()->for($confirmed)->for($workshop)->create();
+    Registration::factory()->waitlisted(1)->for($waitlistedOne)->for($workshop)->create();
+    Registration::factory()->waitlisted(2)->for($waitlistedTwo)->for($workshop)->create();
 
     $this->actingAs($confirmed)
         ->delete(route('workshops.registrations.destroy', $workshop))
@@ -237,11 +209,7 @@ test('employee cannot register to overlapping workshops when trying to confirm',
         'capacity' => 10,
     ]);
 
-    Registration::query()->create([
-        'user_id' => $employee->id,
-        'workshop_id' => $firstWorkshop->id,
-        'status' => RegistrationStatus::CONFIRMED->value,
-    ]);
+    Registration::factory()->confirmed()->for($employee)->for($firstWorkshop)->create();
 
     $response = $this->actingAs($employee)->from(route('workshops.index'))
         ->post(route('workshops.registrations.store', $overlappingWorkshop));
