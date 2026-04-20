@@ -94,7 +94,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-[color:#72a481]">
+    <div class="min-h-screen bg-sidebar-primary">
         <div class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
             <Transition
                 enter-active-class="transition-opacity ease-linear duration-300"
@@ -128,7 +128,7 @@ onMounted(() => {
                             </button>
                         </div>
 
-                        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-[color:#72a481] px-6 pb-4 text-white">
+                        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-sidebar-primary px-6 pb-4 text-white">
                             <nav class="flex flex-1 flex-col">
                                 <ul role="list" class="-mx-2 space-y-1">
                                     <li v-for="item in navItems" :key="item.title">
@@ -163,7 +163,7 @@ onMounted(() => {
                 v-if="desktopSidebarOpen"
                 class="hidden lg:fixed lg:inset-y-0 lg:top-16 lg:z-30 lg:flex lg:w-72 lg:flex-col"
             >
-                <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-[color:#72a481] px-6 pb-4 text-white">
+                <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-sidebar-primary px-6 pb-4 text-white">
                     <nav class="flex flex-1 flex-col">
                         <ul role="list" class="-mx-2 space-y-1">
                             <li v-for="item in navItems" :key="item.title">
@@ -192,7 +192,7 @@ onMounted(() => {
             class="transition-[padding] duration-300 ease-in-out"
             :class="{ 'lg:pl-72': desktopSidebarOpen }"
         >
-            <header class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-white/20 bg-[color:#72a481] px-4 text-white shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+            <header class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-white/20 bg-sidebar-primary px-4 text-white shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
                 <button
                     type="button"
                     class="-m-2.5 p-2.5 text-white lg:hidden"

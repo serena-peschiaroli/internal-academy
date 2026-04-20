@@ -124,7 +124,14 @@ const confirmCancel = () => {
                         </td>
                         <td class="px-4 py-3">{{ fmt(workshop.starts_at) }}</td>
                         <td class="px-4 py-3">
-                            {{ workshop.available_seats }} / {{ workshop.capacity }}
+                            <span
+                                :class="{
+                                    'font-semibold text-destructive': workshop.available_seats === 0,
+                                    'font-semibold text-amber-600': workshop.available_seats > 0 && workshop.available_seats <= 3,
+                                }"
+                            >
+                                {{ workshop.available_seats }} / {{ workshop.capacity }}
+                            </span>
                         </td>
                         <td class="px-4 py-3">
                             <Badge v-if="workshop.registration_status === 'confirmed'">

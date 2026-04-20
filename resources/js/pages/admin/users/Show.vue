@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import { Facebook, Globe, Instagram, Linkedin, MessageCircleMore } from 'lucide-vue-next';
+import { computed } from 'vue';
 import { AtomButton as Button, AtomChip } from '@/components/Atoms';
+import { getInitials } from '@/composables/useInitials';
 
 type UserDetail = {
     id: number;
@@ -30,7 +31,7 @@ const formatDate = (value: string | null): string =>
         })
         : '-';
 
-const socialRows = computed(() => [
+const allSocialRows = computed(() => [
     {
         key: 'reddit',
         label: 'Reddit',
@@ -62,6 +63,8 @@ const socialRows = computed(() => [
         icon: Globe,
     },
 ]);
+
+const socialRows = computed(() => allSocialRows.value.filter(s => s.value));
 </script>
 
 <template>
@@ -89,7 +92,13 @@ const socialRows = computed(() => [
                             alt="User avatar"
                             class="h-16 w-16 rounded-full border border-gray-200 object-cover"
                         />
-                        <p v-else class="text-base font-medium">-</p>
+                        <div
+                            v-else
+                            class="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-semibold text-muted-foreground"
+                            aria-hidden="true"
+                        >
+                            {{ getInitials(props.user.name) }}
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -114,10 +123,9 @@ const socialRows = computed(() => [
                         >
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ social.label }}</p>
-                                <p class="mt-0.5 text-sm font-medium text-foreground break-all">{{ social.value || '-' }}</p>
+                                <p class="mt-0.5 text-sm font-medium text-foreground break-all">{{ social.value }}</p>
                             </div>
                             <a
-                                v-if="social.value"
                                 :href="social.value"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -126,10 +134,10 @@ const socialRows = computed(() => [
                             >
                                 <component :is="social.icon" class="h-4 w-4" />
                             </a>
-                            <span v-else class="inline-flex h-8 w-8 items-center justify-center text-muted-foreground">
-                                -
-                            </span>
                         </div>
+                        <p v-if="socialRows.length === 0" class="text-sm text-muted-foreground">
+                            No social profiles provided.
+                        </p>
                     </div>
                 </div>
                 <div>

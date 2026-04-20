@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { AtomInput, AtomTextarea } from '@/components/Atoms';
 import { AtomButton as Button } from '@/components/Atoms';
 
@@ -12,7 +13,7 @@ type Workshop = {
     capacity: number;
 };
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         action: string;
         method: 'post' | 'patch';
@@ -31,6 +32,10 @@ const toInputDateTime = (value?: string): string => {
 
     return value.replace(' ', 'T').slice(0, 16);
 };
+
+// Tracks the selected starts_at so we can set it as the minimum for ends_at,
+// preventing the browser from accepting an end time before the start time.
+const startsAt = ref(toInputDateTime(props.workshop?.starts_at));
 </script>
 
 <template>
@@ -65,11 +70,11 @@ const toInputDateTime = (value?: string): string => {
         <div class="grid gap-4 md:grid-cols-2">
             <AtomInput
                 id="starts_at"
+                v-model="startsAt"
                 type="datetime-local"
                 name="starts_at"
                 label="Starts at"
                 required
-                :default-value="toInputDateTime(workshop?.starts_at)"
                 :error="errors.starts_at"
             />
 
@@ -79,6 +84,7 @@ const toInputDateTime = (value?: string): string => {
                 name="ends_at"
                 label="Ends at"
                 required
+                :min="startsAt"
                 :default-value="toInputDateTime(workshop?.ends_at)"
                 :error="errors.ends_at"
             />
@@ -97,7 +103,7 @@ const toInputDateTime = (value?: string): string => {
         />
 
         <div class="flex items-center gap-3">
-            <Button type="submit" :disabled="processing">{{ submitLabel }}</Button>
+            <Button type="submit" :loading="processing">{{ submitLabel }}</Button>
             <Button as-child variant="outline">
                 <Link href="/admin/workshops">Cancel</Link>
             </Button>
