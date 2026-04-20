@@ -72,7 +72,10 @@ const loadAdminStats = async (): Promise<void> => {
 };
 
 const startFallbackPolling = (): void => {
-    if (fallbackPollId !== null) return;
+    if (fallbackPollId !== null) {
+        return;
+    }
+
     fallbackPollId = window.setInterval(() => void loadAdminStats(), FALLBACK_POLL_INTERVAL_MS);
 };
 
@@ -145,6 +148,7 @@ onBeforeUnmount(() => {
 
     <div class="page-shell py-6">
         <div class="grid gap-6 md:grid-cols-3">
+            <!-- Admin stats card -->
             <Card v-if="isAdmin">
                 <CardHeader class="flex flex-row items-center justify-between">
                     <CardTitle>Admin dashboard</CardTitle>
@@ -160,25 +164,39 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
                     <template v-else-if="adminStats">
-                        <CardDescription>
-                            Confirmed registrations: <strong>{{ adminStats.confirmed_registrations_count }}</strong>
-                        </CardDescription>
-                        <CardDescription>
-                            Waitlisted users: <strong>{{ adminStats.waitlisted_registrations_count }}</strong>
-                        </CardDescription>
-                        <CardDescription>
-                            Upcoming workshops: <strong>{{ adminStats.workshops_count }}</strong>
-                        </CardDescription>
-                        <CardDescription v-if="lastUpdatedLabel">
-                            Last updated: <strong>{{ lastUpdatedLabel }}</strong>
-                        </CardDescription>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-3xl font-bold tabular-nums">
+                                    {{ adminStats.confirmed_registrations_count }}
+                                </p>
+                                <p class="mt-1 text-xs text-muted-foreground">Confirmed</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-bold tabular-nums">
+                                    {{ adminStats.waitlisted_registrations_count }}
+                                </p>
+                                <p class="mt-1 text-xs text-muted-foreground">Waitlisted</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-bold tabular-nums">
+                                    {{ adminStats.workshops_count }}
+                                </p>
+                                <p class="mt-1 text-xs text-muted-foreground">Workshops</p>
+                            </div>
+                        </div>
+                        <p v-if="lastUpdatedLabel" class="mt-4 text-xs text-muted-foreground">
+                            Updated {{ lastUpdatedLabel }}
+                            <span v-if="isSocketConnected" class="text-green-600"> · Live</span>
+                            <span v-else class="text-amber-600"> · Polling every {{ FALLBACK_POLL_INTERVAL_MS / 1000 }}s</span>
+                        </p>
                     </template>
-                    <CardDescription v-else>
-                        {{ loadingAdminStats ? 'Loading live stats...' : 'No stats available yet.' }}
-                    </CardDescription>
+                    <p v-else class="text-sm text-muted-foreground">
+                        {{ loadingAdminStats ? 'Loading live stats…' : 'No stats available yet.' }}
+                    </p>
                 </CardContent>
             </Card>
 
+            <!-- Employee dashboard card -->
             <Card v-else>
                 <CardHeader class="flex flex-row items-center justify-between">
                     <CardTitle>Employee dashboard</CardTitle>
@@ -191,6 +209,7 @@ onBeforeUnmount(() => {
                 </CardContent>
             </Card>
 
+            <!-- Most popular workshop card -->
             <Card>
                 <CardHeader class="flex flex-row items-center justify-between">
                     <CardTitle v-if="isAdmin">Workshop management</CardTitle>
@@ -199,17 +218,21 @@ onBeforeUnmount(() => {
                 </CardHeader>
                 <CardContent>
                     <template v-if="isAdmin">
-                        <CardDescription v-if="adminStats?.most_popular_workshop">
-                            Most popular workshop:
-                            <strong>{{ adminStats.most_popular_workshop.title }}</strong>
-                            ({{ adminStats.most_popular_workshop.confirmed_count }} confirmed)
-                        </CardDescription>
-                        <CardDescription v-if="adminStats?.most_popular_workshop">
-                            Starts: {{ fmt(adminStats.most_popular_workshop.starts_at) }}
-                        </CardDescription>
-                        <CardDescription v-else>
+                        <template v-if="adminStats?.most_popular_workshop">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                Most popular
+                            </p>
+                            <p class="mt-1 font-medium leading-snug">
+                                {{ adminStats.most_popular_workshop.title }}
+                            </p>
+                            <p class="mt-1 text-sm text-muted-foreground">
+                                {{ adminStats.most_popular_workshop.confirmed_count }} confirmed
+                                · starts {{ fmt(adminStats.most_popular_workshop.starts_at) }}
+                            </p>
+                        </template>
+                        <p v-else class="text-sm text-muted-foreground">
                             No upcoming workshop data available.
-                        </CardDescription>
+                        </p>
                     </template>
                     <CardDescription v-else>
                         Sign up quickly and keep your schedule under control.
@@ -217,6 +240,7 @@ onBeforeUnmount(() => {
                 </CardContent>
             </Card>
 
+            <!-- Admin tools / Account card -->
             <Card>
                 <CardHeader class="flex flex-row items-center justify-between">
                     <CardTitle v-if="isAdmin">Admin tools</CardTitle>
@@ -224,14 +248,9 @@ onBeforeUnmount(() => {
                     <Settings2 class="size-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <template v-if="isAdmin">
-                        <CardDescription v-if="isSocketConnected">
-                            Live updates via WebSocket (Reverb).
-                        </CardDescription>
-                        <CardDescription v-else>
-                            WebSocket unavailable — polling every {{ FALLBACK_POLL_INTERVAL_MS / 1000 }}s.
-                        </CardDescription>
-                    </template>
+                    <CardDescription v-if="isAdmin">
+                        Manage workshops and users from the sidebar.
+                    </CardDescription>
                     <CardDescription v-else>
                         Update profile and security preferences.
                     </CardDescription>

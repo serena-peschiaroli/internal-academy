@@ -21,20 +21,6 @@ const props = defineProps<{
     user: UserDetail;
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Users',
-                href: '/admin/users',
-            },
-            {
-                title: 'Details',
-                href: '/admin/users',
-            },
-        ],
-    },
-});
 
 const formatDate = (value: string | null): string =>
     value

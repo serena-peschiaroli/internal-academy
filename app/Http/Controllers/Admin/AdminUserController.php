@@ -109,6 +109,10 @@ class AdminUserController extends Controller
 
         return Inertia::render('admin/users/Show', [
             'user' => $this->mapUser($user),
+            'breadcrumbs' => [
+                ['title' => 'Users', 'href' => '/admin/users'],
+                ['title' => $user->name],
+            ],
         ]);
     }
 

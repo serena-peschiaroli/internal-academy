@@ -25,6 +25,12 @@ const page = usePage();
 const user = computed(() => page.props.auth.user);
 const roleKey = computed(() => page.props.auth.user.role?.key ?? 'employee');
 
+// Pages can pass dynamic breadcrumbs as an Inertia page prop (e.g. to include the
+// resource name). If present, they take precedence over the static defineOptions value.
+const resolvedBreadcrumbs = computed<BreadcrumbItem[]>(
+    () => (page.props.breadcrumbs as BreadcrumbItem[] | undefined) ?? props.breadcrumbs,
+);
+
 const normalizePath = (path: string): string => {
     if (!path) {
 return '/';
@@ -208,15 +214,15 @@ onMounted(() => {
                 <div class="h-6 w-px bg-white/25 lg:hidden" aria-hidden="true" />
 
                 <div class="flex min-w-0 flex-1 items-center gap-x-2 text-sm text-white/80">
-                    <template v-if="props.breadcrumbs.length">
-                        <template v-for="(crumb, i) in props.breadcrumbs" :key="i">
+                    <template v-if="resolvedBreadcrumbs.length">
+                        <template v-for="(crumb, i) in resolvedBreadcrumbs" :key="i">
                             <Link
                                 v-if="crumb.href"
                                 :href="crumb.href"
                                 class="truncate hover:text-white"
                             >{{ crumb.title }}</Link>
                             <span v-else class="truncate text-white">{{ crumb.title }}</span>
-                            <ChevronRight v-if="i < props.breadcrumbs.length - 1" class="size-3.5 shrink-0 text-white/60" />
+                            <ChevronRight v-if="i < resolvedBreadcrumbs.length - 1" class="size-3.5 shrink-0 text-white/60" />
                         </template>
                     </template>
                 </div>

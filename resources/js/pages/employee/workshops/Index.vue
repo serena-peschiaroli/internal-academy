@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { Form, Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { AtomButton as Button } from '@/components/Atoms';
 import { Badge } from '@/components/ui/badge';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 type WorkshopItem = {
     id: number;
@@ -51,6 +61,30 @@ const fmt = (value: string): string =>
     });
 
 const page = usePage();
+
+type CancelTarget = {
+    workshopId: number;
+    workshopTitle: string;
+    action: 'cancel' | 'leave-waitlist';
+};
+
+const cancelTarget = ref<CancelTarget | null>(null);
+const cancelling = ref(false);
+
+const confirmCancel = () => {
+    if (!cancelTarget.value) {
+        return;
+    }
+
+    cancelling.value = true;
+    router.delete(`/workshops/${cancelTarget.value.workshopId}/registrations`, {
+        preserveScroll: true,
+        onFinish: () => {
+            cancelling.value = false;
+            cancelTarget.value = null;
+        },
+    });
+};
 </script>
 
 <template>
@@ -107,28 +141,28 @@ const page = usePage();
                         <td class="px-4 py-3">{{ workshop.creator?.name ?? '-' }}</td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end">
-                                <Form
+                                <Button
                                     v-if="workshop.registration_status === 'confirmed'"
-                                    :action="`/workshops/${workshop.id}/registrations`"
-                                    method="delete"
+                                    size="sm"
+                                    variant="outline"
+                                    @click="cancelTarget = { workshopId: workshop.id, workshopTitle: workshop.title, action: 'cancel' }"
                                 >
-                                    <Button size="sm" variant="outline">Cancel</Button>
-                                </Form>
-                                <Form
+                                    Cancel
+                                </Button>
+                                <Button
                                     v-else-if="workshop.registration_status === 'waitlisted'"
-                                    :action="`/workshops/${workshop.id}/registrations`"
-                                    method="delete"
+                                    size="sm"
+                                    variant="outline"
+                                    @click="cancelTarget = { workshopId: workshop.id, workshopTitle: workshop.title, action: 'leave-waitlist' }"
                                 >
-                                    <Button size="sm" variant="outline">Leave waitlist</Button>
-                                </Form>
+                                    Leave waitlist
+                                </Button>
                                 <Form
                                     v-else
                                     :action="`/workshops/${workshop.id}/registrations`"
                                     method="post"
                                 >
-                                    <Button
-                                        size="sm"
-                                    >
+                                    <Button size="sm">
                                         {{ workshop.available_seats < 1 ? 'Join waitlist' : 'Register' }}
                                     </Button>
                                 </Form>
@@ -160,6 +194,40 @@ const page = usePage();
                 </span>
             </template>
         </div>
+
+        <Dialog :open="Boolean(cancelTarget)" @update:open="(open) => !open && (cancelTarget = null)">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>
+                        {{ cancelTarget?.action === 'leave-waitlist' ? 'Leave waitlist' : 'Cancel registration' }}
+                    </DialogTitle>
+                    <DialogDescription>
+                        <template v-if="cancelTarget?.action === 'leave-waitlist'">
+                            You will lose your waitlist position for
+                            <strong>"{{ cancelTarget.workshopTitle }}"</strong>.
+                            You can re-register later, but you will be placed at the end of the queue.
+                        </template>
+                        <template v-else>
+                            Your confirmed spot in
+                            <strong>"{{ cancelTarget?.workshopTitle }}"</strong>
+                            will be released and given to the next person on the waitlist.
+                        </template>
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter class="gap-2">
+                    <DialogClose as-child>
+                        <Button variant="outline">Keep my spot</Button>
+                    </DialogClose>
+                    <Button
+                        variant="destructive"
+                        :disabled="cancelling"
+                        @click="confirmCancel"
+                    >
+                        {{ cancelling ? 'Cancelling…' : (cancelTarget?.action === 'leave-waitlist' ? 'Leave waitlist' : 'Cancel registration') }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
 </template>
 
